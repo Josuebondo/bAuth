@@ -1,0 +1,39 @@
+# Composer
+vendor/
+composer.lock
+composer.phar
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.phpunit.cache/
+coverage/
+*.coverage
+
+# Build
+build/
+dist/
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Session
+session/
+tmp/
+temp/

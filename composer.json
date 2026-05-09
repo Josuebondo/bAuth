@@ -1,0 +1,46 @@
+{
+  "name": "bauth/bauth",
+  "description": "A complete, framework-agnostic PHP authentication library",
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "BAuth Developer"
+    }
+  ],
+  "require": {
+    "php": "^8.0",
+    "firebase/jwt": "^6.0",
+    "paragonie/random_compat": "^9.99",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5",
+    "phpstan/phpstan": "^1.0",
+    "squizlabs/php_codesniffer": "^3.7"
+  },
+  "autoload": {
+    "psr-4": {
+      "BAuth\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "BAuth\\Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit",
+    "phpstan": "phpstan analyse src/",
+    "phpcs": "phpcs src/"
+  },
+  "keywords": [
+    "authentication",
+    "auth",
+    "jwt",
+    "security",
+    "php",
+    "laravel",
+    "symfony"
+  ]
+}
