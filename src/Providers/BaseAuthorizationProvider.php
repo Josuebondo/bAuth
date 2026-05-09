@@ -1,8 +1,8 @@
 <?php
 
-namespace BAuth\Providers;
+namespace Bmvc\BAuth\Providers;
 
-use BAuth\Contracts\AuthorizationProviderInterface;
+use Bmvc\BAuth\Contracts\AuthorizationProviderInterface;
 
 /**
  * Fournisseur d'autorisation pour les rôles et permissions

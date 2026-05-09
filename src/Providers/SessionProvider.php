@@ -1,9 +1,9 @@
 <?php
 
-namespace BAuth\Providers;
+namespace Bmvc\BAuth\Providers;
 
-use BAuth\Config;
-use BAuth\Contracts\SessionProviderInterface;
+use Bmvc\BAuth\Config;
+use Bmvc\BAuth\Contracts\SessionProviderInterface;
 
 /**
  * Fournisseur de sessions PHP

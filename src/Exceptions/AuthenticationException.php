@@ -1,6 +1,8 @@
 <?php
 
-namespace BAuth\Exceptions;
+namespace Bmvc\BAuth\Exceptions;
+
+use Bmvc\BAuth\Exceptions\BAuthException;
 
 /**
  * Exception levée lors d'une authentification échouée

@@ -1,6 +1,6 @@
 <?php
 
-namespace BAuth\Contracts;
+namespace Bmvc\BAuth\Contracts;
 
 /**
  * Interface pour l'authentification à deux facteurs (2FA)

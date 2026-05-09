@@ -1,6 +1,6 @@
 <?php
 
-namespace BAuth\Contracts;
+namespace Bmvc\BAuth\Contracts;
 
 /**
  * Interface pour les fournisseurs d'authentification

@@ -1,6 +1,6 @@
 <?php
 
-namespace BAuth;
+namespace Bmvc\BAuth;
 
 /**
  * Configuration pour BAuth

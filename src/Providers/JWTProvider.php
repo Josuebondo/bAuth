@@ -1,10 +1,10 @@
 <?php
 
-namespace BAuth\Providers;
+namespace Bmvc\BAuth\Providers;
 
-use BAuth\Config;
-use BAuth\Contracts\TokenProviderInterface;
-use BAuth\Exceptions\InvalidTokenException;
+use Bmvc\BAuth\Config;
+use Bmvc\BAuth\Contracts\TokenProviderInterface;
+use Bmvc\BAuth\Exceptions\InvalidTokenException;
 use Firebase\JWT\JWT;
 
 /**

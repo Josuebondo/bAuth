@@ -1,8 +1,8 @@
 <?php
 
-namespace BAuth\Support;
+namespace Bmvc\BAuth\Support;
 
-use BAuth\Config;
+use Bmvc\BAuth\Config;
 
 /**
  * Utilitaire pour le hachage et la vérification des mots de passe

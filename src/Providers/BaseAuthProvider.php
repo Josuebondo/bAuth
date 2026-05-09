@@ -1,12 +1,12 @@
 <?php
 
-namespace BAuth\Providers;
+namespace Bmvc\BAuth\Providers;
 
-use BAuth\Config;
-use BAuth\Contracts\AuthProviderInterface;
-use BAuth\Exceptions\AuthenticationException;
-use BAuth\Exceptions\UserNotFoundException;
-use BAuth\Support\Password;
+use Bmvc\BAuth\Config;
+use Bmvc\BAuth\Contracts\AuthProviderInterface;
+use Bmvc\BAuth\Exceptions\AuthenticationException;
+use Bmvc\BAuth\Exceptions\UserNotFoundException;
+use Bmvc\BAuth\Support\Password;
 
 /**
  * Fournisseur d'authentification par défaut

@@ -1,8 +1,8 @@
 <?php
 
-namespace BAuth\Providers;
+namespace Bmvc\BAuth\Providers;
 
-use BAuth\Contracts\TwoFactorProviderInterface;
+use Bmvc\BAuth\Contracts\TwoFactorProviderInterface;
 
 /**
  * Fournisseur d'authentification à deux facteurs

@@ -1,10 +1,10 @@
 <?php
 
-namespace BAuth\Tests;
+namespace Bmvc\BAuth\Tests;
 
-use BAuth\Config;
-use BAuth\Auth;
-use BAuth\Examples\Generic\GenericAuthProvider;
+use Bmvc\BAuth\Config;
+use Bmvc\BAuth\Auth;
+use Bmvc\BAuth\Examples\Generic\GenericAuthProvider;
 use PHPUnit\Framework\TestCase;
 
 class AuthTest extends TestCase

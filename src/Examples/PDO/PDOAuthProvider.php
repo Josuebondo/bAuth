@@ -1,8 +1,8 @@
 <?php
 
-namespace BAuth\Examples\PDO;
+namespace Bmvc\BAuth\Examples\PDO;
 
-use BAuth\Providers\BaseAuthProvider;
+use Bmvc\BAuth\Providers\BaseAuthProvider;
 use PDO;
 
 /**

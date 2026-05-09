@@ -1,6 +1,6 @@
 <?php
 
-namespace BAuth\Exceptions;
+namespace Bmvc\BAuth\Exceptions;
 
 /**
  * Exception levée quand un token est invalide

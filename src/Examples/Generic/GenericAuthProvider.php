@@ -1,8 +1,8 @@
 <?php
 
-namespace BAuth\Examples\Generic;
+namespace Bmvc\BAuth\Examples\Generic;
 
-use BAuth\Providers\BaseAuthProvider;
+use Bmvc\BAuth\Providers\BaseAuthProvider;
 
 /**
  * Fournisseur d'authentification générique utilisant des callbacks

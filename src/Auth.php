@@ -1,16 +1,22 @@
 <?php
 
-namespace BAuth;
+namespace Bmvc\BAuth;
 
-use BAuth\Contracts\AuthProviderInterface;
-use BAuth\Contracts\AuthorizationProviderInterface;
-use BAuth\Contracts\SessionProviderInterface;
-use BAuth\Contracts\TokenProviderInterface;
-use BAuth\Contracts\TwoFactorProviderInterface;
-use BAuth\Exceptions\AuthenticationException;
-use BAuth\Exceptions\AuthorizationException;
-use BAuth\Providers\JWTProvider;
-use BAuth\Providers\SessionProvider;
+use Bmvc\BAuth\Contracts\AuthProviderInterface;
+use Bmvc\BAuth\Contracts\AuthorizationProviderInterface;
+use Bmvc\BAuth\Contracts\SessionProviderInterface;
+use Bmvc\BAuth\Contracts\TokenProviderInterface;
+use Bmvc\BAuth\Contracts\TwoFactorProviderInterface;
+use Bmvc\BAuth\Exceptions\AuthenticationException;
+use Bmvc\BAuth\Exceptions\AuthorizationException;
+use Bmvc\BAuth\Exceptions\InvalidTokenException;
+use Bmvc\BAuth\Providers\BaseAuthorizationProvider;
+use Bmvc\BAuth\Providers\BaseAuthProvider;
+use Bmvc\BAuth\Providers\BaseTwoFactorProvider;
+use Bmvc\BAuth\Providers\JWTProvider;
+use Bmvc\BAuth\Providers\SessionProvider;
+use Bmvc\BAuth\Exceptions\UserNotFoundException;
+
 
 /**
  * Classe principale BAuth
