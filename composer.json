@@ -1,11 +1,12 @@
 {
-  "name": "bauth/bauth",
+  "name": "bmvc/bauth",
   "description": "A complete, framework-agnostic PHP authentication library",
   "type": "library",
   "license": "MIT",
   "authors": [
     {
-      "name": "BAuth Developer"
+      "name": "josue Bondo",
+      "email": "josuebondojw@gmail.com"
     }
   ],
   "require": {
@@ -40,6 +41,8 @@
     "jwt",
     "security",
     "php",
+    "bauth",
+    "bmvc",
     "laravel",
     "symfony"
   ]
