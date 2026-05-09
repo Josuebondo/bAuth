@@ -26,12 +26,12 @@
   },
   "autoload": {
     "psr-4": {
-      "BAuth\\\\": "src/"
+      "Bmvc\\BAuth\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "BAuth\\\\Tests\\\\": "tests/"
+      "Bmvc\\BAuth\\Tests\\": "tests/"
     }
   },
   "scripts": {
