@@ -5,14 +5,18 @@
   "license": "MIT",
   "authors": [
     {
-      "name": "josue Bondo",
+      "name": "Josue Bondo",
       "email": "josuebondojw@gmail.com"
     }
   ],
+  "homepage": "https://github.com/josuebondo/bauth",
+  "support": {
+    "issues": "https://github.com/josuebondo/bauth/issues",
+    "source": "https://github.com/josuebondo/bauth"
+  },
   "require": {
     "php": "^8.0",
-    "firebase/jwt": "^6.0",
-    "paragonie/random_compat": "^9.99",
+    "firebase/php-jwt": "^6.0",
     "ext-json": "*"
   },
   "require-dev": {
@@ -22,12 +26,12 @@
   },
   "autoload": {
     "psr-4": {
-      "BAuth\\": "src/"
+      "BAuth\\\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "BAuth\\Tests\\": "tests/"
+      "BAuth\\\\Tests\\\\": "tests/"
     }
   },
   "scripts": {
