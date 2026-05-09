@@ -1,6 +1,6 @@
 <?php
 
-namespace Bmvc\BAuth\Examples\Symfony;
+namespace Bmvc\BAuth\Adapters\Symfony;
 
 use Bmvc\BAuth\Providers\BaseAuthProvider;
 use Doctrine\ORM\EntityManagerInterface;

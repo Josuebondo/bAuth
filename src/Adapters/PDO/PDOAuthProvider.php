@@ -1,6 +1,6 @@
 <?php
 
-namespace Bmvc\BAuth\Examples\PDO;
+namespace Bmvc\BAuth\Adapters\PDO;
 
 use Bmvc\BAuth\Providers\BaseAuthProvider;
 use PDO;

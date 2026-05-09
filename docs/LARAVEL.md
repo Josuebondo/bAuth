@@ -1,20 +1,43 @@
-# BAuth avec Laravel
+Voici une version **améliorée, plus claire, plus “Laravel-style” et surtout expliquée (ce que fait chaque méthode + pourquoi tu l’utilises)**.
 
-## Installation
+---
 
-### 1. Installer BAuth
+# 🔥 BAuth avec Laravel (Guide d’utilisation propre)
+
+## 🎯 Objectif
+
+BAuth s’intègre dans Laravel comme un **service d’authentification alternatif à Laravel Auth**.
+
+Tu peux l’utiliser pour :
+
+- login / logout
+- JWT (API)
+- rôles & permissions
+- 2FA
+- middleware
+- API sécurisée
+
+---
+
+# 🚀 1. Installation
 
 ```bash
-composer require bauth/bauth
+composer require bmvc/bauth
 ```
 
-### 2. Créer un Service Provider
+---
+
+# ⚙️ 2. Service Provider (cœur de l’intégration)
+
+## 📌 Créer le provider
 
 ```bash
 php artisan make:provider BAuthServiceProvider
 ```
 
-Modifiez `app/Providers/BAuthServiceProvider.php` :
+---
+
+## 📌 Configuration du service
 
 ```php
 <?php
@@ -22,175 +45,145 @@ Modifiez `app/Providers/BAuthServiceProvider.php` :
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use BAuth\Config;
-use BAuth\Auth;
-use BAuth\Examples\Laravel\LaravelAuthProvider;
+use Bmvc\BAuth\Config;
+use Bmvc\BAuth\Auth;
+use Bmvc\BAuth\Adapters\Laravel\LaravelAuthProvider;
 
 class BAuthServiceProvider extends ServiceProvider
 {
     public function register()
     {
         $this->app->singleton('bauth', function () {
+
+            // 1. Configuration globale de BAuth
             $config = new Config([
                 'jwt' => [
-                    'secret' => config('auth.jwt_secret'),
+                    'secret' => env('AUTH_JWT_SECRET'),
+
+                    // durée de vie du token (1h)
                     'expiresIn' => 3600,
                 ],
             ]);
 
+            // 2. Instance principale (le moteur d'auth)
             $auth = new Auth($config);
+
+            // 3. Provider Laravel (connexion à la table users)
             $authProvider = new LaravelAuthProvider($config, 'users');
+
+            // 4. On connecte BAuth à la base de données
             $auth->setAuthProvider($authProvider);
 
             return $auth;
         });
     }
-
-    public function boot()
-    {
-        //
-    }
 }
 ```
 
-### 3. Enregistrer le Service Provider
+---
 
-Modifiez `config/app.php` :
+## 💡 Ce que ça fait réellement
 
-```php
-'providers' => [
-    // ...
-    App\Providers\BAuthServiceProvider::class,
-],
-```
+- `Config` → définit comment BAuth fonctionne (JWT, password…)
+- `Auth` → moteur principal (login, logout, permissions)
+- `LaravelAuthProvider` → connecte BAuth à ta table `users`
+- `singleton('bauth')` → rend BAuth disponible partout dans Laravel
 
-### 4. Configurer `.env`
+---
 
-```env
-AUTH_JWT_SECRET=your-secret-key-here
-```
+# 🧠 3. Comment utiliser BAuth dans Laravel
 
-Générez une clé :
+---
 
-```bash
-php -r "echo bin2hex(random_bytes(32));"
-```
-
-## Configuration de la table users
-
-BAuth fonctionne avec la migration Laravel standard des utilisateurs.
-
-Si vous devez ajouter des colonnes, utilisez une migration :
-
-```bash
-php artisan make:migration AddBAuthColumnsToUsersTable
-```
+## 🔐 LOGIN (authentification)
 
 ```php
-<?php
+$auth = app('bauth');
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
+$result = $auth->login($request->email, $request->password);
+```
 
-class AddBAuthColumnsToUsersTable extends Migration
-{
-    public function up()
-    {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('totp_secret')->nullable();
-            $table->boolean('two_factor_enabled')->default(false);
-        });
-    }
+### 📌 Ce que fait `login()`
 
-    public function down()
-    {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('totp_secret');
-            $table->dropColumn('two_factor_enabled');
-        });
-    }
+- vérifie email + password
+- compare avec la base de données
+- génère un JWT token
+- retourne utilisateur + token
+
+### 📦 Résultat
+
+```php
+[
+    'user' => [...],
+    'token' => 'eyJhbGciOi...'
+]
+```
+
+---
+
+## 🔐 LOGOUT
+
+```php
+$auth->logout();
+```
+
+### 📌 Ce que fait `logout()`
+
+- supprime la session actuelle
+- invalide l'utilisateur courant côté application
+
+---
+
+## 👤 UTILISATEUR ACTUEL
+
+```php
+$user = $auth->user();
+```
+
+### 📌 Ce que fait `user()`
+
+- récupère l’utilisateur connecté via session ou token
+- retourne un tableau utilisateur
+
+---
+
+## 🔎 CHECK AUTH
+
+```php
+if ($auth->isAuthenticated()) {
+    // utilisateur connecté
 }
 ```
 
-## Utilisation basique
+### 📌 Ce que fait `isAuthenticated()`
 
-### Contrôleur d'authentification
+- vérifie si un utilisateur est connecté
+- basé sur session ou JWT
 
-```php
-<?php
+---
 
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-class AuthController extends Controller
-{
-    public function login(Request $request)
-    {
-        $auth = app('bauth');
-
-        try {
-            $result = $auth->login(
-                $request->input('email'),
-                $request->input('password')
-            );
-
-            return response()->json([
-                'success' => true,
-                'user' => $result['user'],
-                'token' => $result['token'],
-            ]);
-        } catch (\BAuth\Exceptions\AuthenticationException $e) {
-            return response()->json([
-                'success' => false,
-                'error' => 'Invalid credentials',
-            ], 401);
-        }
-    }
-
-    public function logout()
-    {
-        $auth = app('bauth');
-        $auth->logout();
-
-        return response()->json(['success' => true]);
-    }
-
-    public function profile()
-    {
-        $auth = app('bauth');
-
-        if (!$auth->isAuthenticated()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
-        }
-
-        return response()->json(['user' => $auth->user()]);
-    }
-}
-```
-
-### Routes
-
-Modifiez `routes/api.php` :
+# 🧭 4. Routes Laravel (API)
 
 ```php
-<?php
-
-use App\Http\Controllers\AuthController;
-
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:bauth');
-Route::get('/profile', [AuthController::class, 'profile'])->middleware('auth:bauth');
+
+Route::get('/profile', [AuthController::class, 'profile'])
+    ->middleware('bauth');
 ```
 
-## Middleware
+---
 
-### Créer un middleware BAuth
+# 🛡️ 5. Middleware BAuth (protection des routes)
+
+## 📌 Création
 
 ```bash
 php artisan make:middleware BAuthMiddleware
 ```
+
+---
+
+## 📌 Code
 
 ```php
 <?php
@@ -198,48 +191,40 @@ php artisan make:middleware BAuthMiddleware
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Http\Request;
 
 class BAuthMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle($request, Closure $next)
     {
         $auth = app('bauth');
 
+        // 🔐 Vérifie si utilisateur connecté
         if (!$auth->isAuthenticated()) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 401);
         }
 
-        // Ajouter l'utilisateur à la requête
-        $request->setUserResolver(fn() => $auth->user());
+        // 👤 injecte user dans request Laravel
+        $request->setUserResolver(fn () => $auth->user());
 
         return $next($request);
     }
 }
 ```
 
-Enregistrez-le dans `app/Http/Kernel.php` :
+---
+
+## 📌 Ce que fait ce middleware
+
+- bloque accès si pas connecté
+- ajoute user dans `$request->user()`
+
+---
+
+# 🔐 6. Middleware Role (accès admin)
 
 ```php
-protected $routeMiddleware = [
-    // ...
-    'bauth' => \App\Http\Middleware\BAuthMiddleware::class,
-];
-```
-
-### Middleware de rôle
-
-```bash
-php artisan make:middleware BAuthRoleMiddleware
-```
-
-```php
-<?php
-
-namespace App\Http\Middleware;
-
-use Closure;
-
 class BAuthRoleMiddleware
 {
     public function handle($request, Closure $next, ...$roles)
@@ -261,375 +246,145 @@ class BAuthRoleMiddleware
 }
 ```
 
-Utilisez-le :
+---
+
+## 📌 Utilisation
 
 ```php
-Route::delete('/users/{id}', function() {
-    // ...
-})->middleware('auth:bauth', 'role:admin');
+Route::delete('/users/{id}', function () {
+    //
+})->middleware(['bauth', 'role:admin']);
 ```
 
-## Contrôle d'accès (Authorization)
+---
 
-### Policy Laravel
-
-```bash
-php artisan make:policy PostPolicy
-```
+# 🧠 7. Permissions (can)
 
 ```php
-<?php
-
-namespace App\Policies;
-
-class PostPolicy
-{
-    public function create()
-    {
-        $auth = app('bauth');
-        return $auth->can('create_posts');
-    }
-
-    public function update()
-    {
-        $auth = app('bauth');
-        return $auth->can('update_posts');
-    }
-
-    public function delete()
-    {
-        $auth = app('bauth');
-        return $auth->can('delete_posts');
-    }
+if ($auth->can('edit_posts')) {
+    // autorisé
 }
 ```
 
-### Utiliser les policies
+### 📌 Ce que fait `can()`
+
+- vérifie si user a une permission
+- basé sur roles + permissions DB
+
+---
+
+# 🔑 8. JWT (API)
+
+## 📦 récupérer token
 
 ```php
-<?php
+$token = $auth->token();
+```
 
-namespace App\Http\Controllers;
+---
 
-use App\Models\Post;
-use App\Policies\PostPolicy;
+## 📦 vérifier token
 
-class PostController extends Controller
+```php
+$payload = $auth->verifyToken($token);
+```
+
+### 📌 Ce que fait `verifyToken()`
+
+- vérifie signature JWT
+- vérifie expiration
+- retourne payload utilisateur
+
+---
+
+## 🔄 refresh token
+
+```php
+$newToken = $auth->refreshToken();
+```
+
+### 📌 Ce que fait `refreshToken()`
+
+- génère un nouveau token
+- sans refaire login
+
+---
+
+# 🔐 9. Controller Laravel (exemple propre)
+
+```php
+class AuthController extends Controller
 {
-    public function store()
+    public function login(Request $request)
     {
-        $this->authorize('create', Post::class);
-        // Créer un post
+        $auth = app('bauth');
+
+        $result = $auth->login(
+            $request->email,
+            $request->password
+        );
+
+        return response()->json($result);
     }
-}
-```
 
-## Authentification JWT
-
-### Extraire le token de la requête
-
-```php
-<?php
-
-$auth = app('bauth');
-$tokenProvider = $auth->getTokenProvider();
-$token = $tokenProvider->extractFromRequest();
-
-if ($token) {
-    try {
-        $payload = $auth->verifyToken($token);
-        // Token valide
-    } catch (\BAuth\Exceptions\InvalidTokenException $e) {
-        // Token invalide
-    }
-}
-```
-
-### Retourner un token
-
-```php
-<?php
-
-public function login(Request $request)
-{
-    $auth = app('bauth');
-
-    try {
-        $result = $auth->login($request->email, $request->password);
+    public function profile()
+    {
+        $auth = app('bauth');
 
         return response()->json([
-            'access_token' => $result['token'],
-            'token_type' => 'Bearer',
-            'expires_in' => 3600,
-        ]);
-    } catch (Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 401);
-    }
-}
-```
-
-### Renouveler le token
-
-```php
-<?php
-
-Route::post('/refresh-token', function (Request $request) {
-    $auth = app('bauth');
-
-    try {
-        $newToken = $auth->refreshToken();
-
-        return response()->json([
-            'access_token' => $newToken,
-            'token_type' => 'Bearer',
-        ]);
-    } catch (Exception $e) {
-        return response()->json(['error' => $e->getMessage()], 401);
-    }
-})->middleware('auth:bauth');
-```
-
-## 2FA avec Laravel
-
-### Controller 2FA
-
-```php
-<?php
-
-namespace App\Http\Controllers;
-
-use Illuminate\Http\Request;
-
-class TwoFactorController extends Controller
-{
-    public function enable()
-    {
-        $auth = app('bauth');
-        $twoFactor = $auth->getTwoFactorProvider();
-
-        if (!$twoFactor) {
-            return response()->json(['error' => '2FA not available'], 400);
-        }
-
-        $userId = $auth->userId();
-        $result = $twoFactor->enable($userId);
-
-        return response()->json([
-            'secret' => $result['secret'],
-            'qr_code' => $result['qr_code'],
+            'user' => $auth->user()
         ]);
     }
 
-    public function verify(Request $request)
+    public function logout()
     {
-        $auth = app('bauth');
-        $code = $request->input('code');
+        app('bauth')->logout();
 
-        if ($auth->verify2FA($code)) {
-            return response()->json(['success' => true]);
-        }
-
-        return response()->json(['error' => 'Invalid code'], 400);
-    }
-
-    public function disable()
-    {
-        $auth = app('bauth');
-        $twoFactor = $auth->getTwoFactorProvider();
-
-        $userId = $auth->userId();
-        $twoFactor->disable($userId);
-
-        return response()->json(['success' => true]);
+        return response()->json(['message' => 'logged out']);
     }
 }
 ```
 
-## Événements
+---
 
-### Dispatcher d'événements
+# 🧪 10. Résumé mental simple
 
-```php
-<?php
+## 💡 BAuth dans Laravel =
 
-namespace App\Events;
+| Action         | Méthode             |
+| -------------- | ------------------- |
+| Login          | `login()`           |
+| Logout         | `logout()`          |
+| User connecté  | `user()`            |
+| Vérifier login | `isAuthenticated()` |
+| Permissions    | `can()`             |
+| Rôles          | `hasRole()`         |
+| Token          | `token()`           |
+| Vérifier token | `verifyToken()`     |
 
-use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Queue\SerializesModels;
+---
 
-class UserLoggedIn
-{
-    use Dispatchable, SerializesModels;
+# 🔥 11. Architecture Laravel (simple)
 
-    public function __construct(public array $user, public string $token) {}
-}
-
-class UserLoggedOut
-{
-    use Dispatchable, SerializesModels;
-
-    public function __construct(public int $userId) {}
-}
+```
+Controller
+    ↓
+app('bauth')
+    ↓
+Auth (core)
+    ↓
+LaravelAuthProvider
+    ↓
+Database (users, roles, permissions)
 ```
 
-### Utiliser dans le contrôleur
+---
 
-```php
-<?php
+# 🚀 Conclusion
 
-use App\Events\UserLoggedIn;
-use App\Events\UserLoggedOut;
+Avec Laravel, BAuth devient :
 
-public function login(Request $request)
-{
-    $auth = app('bauth');
-    $result = $auth->login($request->email, $request->password);
-
-    event(new UserLoggedIn($result['user'], $result['token']));
-
-    return response()->json($result);
-}
-
-public function logout()
-{
-    $auth = app('bauth');
-    $userId = $auth->userId();
-    $auth->logout();
-
-    event(new UserLoggedOut($userId));
-
-    return response()->json(['success' => true]);
-}
-```
-
-## Configuration avancée
-
-### Provider personnalisé avec le repository pattern
-
-```php
-<?php
-
-namespace App\Repositories;
-
-use BAuth\Providers\BaseAuthProvider;
-use App\Models\User;
-
-class BAuthUserRepository extends BaseAuthProvider
-{
-    public function getUserByIdentifier(string $identifier): ?array
-    {
-        $user = User::where('email', $identifier)
-            ->orWhere('username', $identifier)
-            ->first();
-
-        return $user ? $user->toArray() : null;
-    }
-
-    public function getUserByEmail(string $email): ?array
-    {
-        $user = User::where('email', $email)->first();
-        return $user ? $user->toArray() : null;
-    }
-
-    public function getUserById(mixed $id): ?array
-    {
-        $user = User::find($id);
-        return $user ? $user->toArray() : null;
-    }
-
-    public function createUser(array $userData): ?array
-    {
-        $userData['password'] = $this->password->hash($userData['password'] ?? '');
-        $user = User::create($userData);
-        return $user->toArray();
-    }
-
-    public function updateUser(mixed $userId, array $data): bool
-    {
-        if (isset($data['password'])) {
-            $data['password'] = $this->password->hash($data['password']);
-        }
-
-        return User::find($userId)->update($data) > 0;
-    }
-
-    public function deleteUser(mixed $userId): bool
-    {
-        return User::find($userId)->delete();
-    }
-}
-```
-
-Enregistrez-le dans le Service Provider :
-
-```php
-public function register()
-{
-    $this->app->singleton('bauth', function () {
-        $config = new Config([...]);
-        $auth = new Auth($config);
-
-        $authProvider = new \App\Repositories\BAuthUserRepository($config);
-        $auth->setAuthProvider($authProvider);
-
-        return $auth;
-    });
-}
-```
-
-## Tests
-
-### Test unitaire
-
-```php
-<?php
-
-namespace Tests\Feature;
-
-use Tests\TestCase;
-
-class AuthTest extends TestCase
-{
-    public function test_user_can_login()
-    {
-        $response = $this->post('/api/login', [
-            'email' => 'test@example.com',
-            'password' => 'password123',
-        ]);
-
-        $response->assertStatus(200);
-        $response->assertJsonStructure([
-            'success',
-            'user',
-            'token',
-        ]);
-    }
-
-    public function test_user_cannot_login_with_invalid_credentials()
-    {
-        $response = $this->post('/api/login', [
-            'email' => 'test@example.com',
-            'password' => 'wrongpassword',
-        ]);
-
-        $response->assertStatus(401);
-    }
-
-    public function test_user_can_access_protected_route()
-    {
-        $auth = app('bauth');
-        // Login user
-        $auth->login('test@example.com', 'password123');
-
-        $response = $this->get('/api/profile');
-
-        $response->assertStatus(200);
-    }
-}
-```
-
-## Ressources supplémentaires
-
-- [Guide d'utilisation complet](USAGE.md)
-- [Référence API](API.md)
-- [Exemples](../examples/)
+👉 un **Auth service central**
+👉 remplaçant flexible de Laravel Auth
+👉 compatible API JWT + session
+👉 prêt pour RBAC + 2FA

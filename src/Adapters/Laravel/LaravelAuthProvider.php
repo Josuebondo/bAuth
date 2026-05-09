@@ -1,6 +1,6 @@
 <?php
 
-namespace Bmvc\BAuth\Examples\Laravel;
+namespace Bmvc\BAuth\Adapters\Laravel;
 
 use Bmvc\BAuth\Providers\BaseAuthProvider;
 use Illuminate\Support\Facades\DB;

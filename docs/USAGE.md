@@ -1,610 +1,406 @@
-# Guide d'utilisation complet de BAuth
+# 📘 Guide d’utilisation — BAuth
 
-## Table des matières
+> Documentation complète pour utiliser BAuth dans vos projets PHP.
 
-1. [Concepts de base](#concepts-de-base)
-2. [Authentification](#authentification)
-3. [Gestion des sessions](#gestion-des-sessions)
-4. [Tokens JWT](#tokens-jwt)
-5. [Autorisation](#autorisation)
-6. [2FA](#2fa)
-7. [Gestion des utilisateurs](#gestion-des-utilisateurs)
-8. [Gestion des erreurs](#gestion-des-erreurs)
+---
 
-## Concepts de base
+# 📑 Table des matières
 
-BAuth fonctionne avec plusieurs composants :
+- Concepts de base
+- Authentification
+- Sessions
+- JWT
+- Autorisation
+- 2FA
+- Gestion des utilisateurs
+- Sécurité & mots de passe
+- Gestion des erreurs
+- Cas pratiques
 
-- **AuthProvider** : Gère la base de données des utilisateurs
-- **SessionProvider** : Gère les sessions PHP
-- **TokenProvider** : Gère les tokens JWT
-- **AuthorizationProvider** : Gère les rôles et permissions
-- **TwoFactorProvider** : Gère le 2FA
+---
+
+# 🧠 Concepts de base
+
+BAuth repose sur une architecture modulaire composée de providers :
+
+- **AuthProvider** → gestion des utilisateurs
+- **SessionProvider** → gestion des sessions
+- **TokenProvider** → gestion JWT
+- **AuthorizationProvider** → rôles & permissions
+- **TwoFactorProvider** → authentification 2FA
+
+---
+
+## 🔧 Initialisation
 
 ```php
 <?php
 
-use BAuth\Auth;
-use BAuth\Config;
+use Bmvc\BAuth\Auth;
+use Bmvc\BAuth\Config;
 
-// Créer la configuration
 $config = new Config([
-    'jwt' => ['secret' => 'votre-clé', 'expiresIn' => 3600],
-    'password' => ['algorithm' => PASSWORD_BCRYPT, 'options' => ['cost' => 12]],
+    'jwt' => [
+        'secret' => 'your-secret-key',
+        'expiresIn' => 3600,
+    ],
+    'password' => [
+        'algorithm' => PASSWORD_BCRYPT,
+        'options' => ['cost' => 12],
+    ],
 ]);
 
-// Créer l'instance Auth
 $auth = new Auth($config);
-
-// Configurer les providers
-$auth->setAuthProvider($authProvider);      // Requis
-$auth->setSessionProvider($sessionProvider); // Optionnel
-$auth->setTokenProvider($tokenProvider);     // Optionnel
-$auth->setAuthorizationProvider($authProvider); // Optionnel
-$auth->setTwoFactorProvider($twoFactorProvider); // Optionnel
 ```
 
-## Authentification
+---
 
-### Connexion basique
+# 🔐 Authentification
+
+## Connexion
 
 ```php
 <?php
 
-try {
-    $result = $auth->login('user@example.com', 'password123');
+$result = $auth->login('user@example.com', 'password123');
 
-    // Résultat
-    $user = $result['user'];    // Array avec les données utilisateur
-    $token = $result['token'];  // Token JWT
-
-    echo "Connecté: " . $user['email'];
-} catch (\BAuth\Exceptions\AuthenticationException $e) {
-    echo "Erreur: " . $e->getMessage();
-} catch (\BAuth\Exceptions\UserNotFoundException $e) {
-    echo "Utilisateur non trouvé";
-}
+$user  = $result['user'];
+$token = $result['token'];
 ```
 
-### Vérifier l'authentification
+---
+
+## Vérifier l’authentification
 
 ```php
 <?php
 
 if ($auth->isAuthenticated()) {
-    echo "L'utilisateur est connecté";
-} else {
-    echo "L'utilisateur n'est pas connecté";
+    echo "Utilisateur connecté";
 }
 ```
 
-### Obtenir l'utilisateur actuel
+---
+
+## Utilisateur actuel
 
 ```php
 <?php
 
 $user = $auth->user();
 
-if ($user) {
-    echo "ID: " . $user['id'];
-    echo "Email: " . $user['email'];
-    echo "Nom d'utilisateur: " . $user['username'];
-}
+echo $user['email'];
 ```
 
-### Obtenir l'ID utilisateur
+---
 
-```php
-<?php
-
-$userId = $auth->userId();
-echo "ID utilisateur: " . $userId;
-```
-
-### Déconnexion
+## Déconnexion
 
 ```php
 <?php
 
 $auth->logout();
-echo "Déconnecté avec succès";
 ```
 
-## Gestion des sessions
+---
 
-Les sessions PHP sont gérées automatiquement par BAuth.
+# 📦 Sessions
 
-### Obtenir une valeur de session
+## Obtenir une session
 
 ```php
-<?php
-
-$token = $auth->user();                    // Récupérer l'utilisateur
-$token = $auth->getSessionProvider()->get('auth_token'); // Récupérer le token
-$customValue = $auth->getSessionProvider()->get('custom_key', 'default'); // Avec défaut
+$auth->getSessionProvider()->get('key');
 ```
 
-### Définir une valeur de session
+---
+
+## Définir une session
 
 ```php
-<?php
-
 $auth->getSessionProvider()->put('key', 'value');
-$auth->getSessionProvider()->put('nested.key', 'value');
 ```
 
-### Supprimer une valeur de session
+---
+
+## Supprimer une session
 
 ```php
-<?php
-
 $auth->getSessionProvider()->forget('key');
 ```
 
-### Détruire la session
+---
+
+## Détruire session
 
 ```php
-<?php
-
 $auth->getSessionProvider()->destroy();
 ```
 
-## Tokens JWT
+---
 
-### Obtenir le token actuel
+# 🔑 JWT
+
+## Récupérer token
 
 ```php
-<?php
-
 $token = $auth->token();
-echo "Token: " . $token;
 ```
 
-### Renouveler le token
+---
+
+## Vérifier token
 
 ```php
-<?php
+$payload = $auth->verifyToken($token);
+```
 
-try {
-    $newToken = $auth->refreshToken();
-    echo "Nouveau token: " . $newToken;
-} catch (\BAuth\Exceptions\AuthenticationException $e) {
-    echo "Erreur: " . $e->getMessage();
+---
+
+## Refresh token
+
+```php
+$newToken = $auth->refreshToken();
+```
+
+---
+
+## Extraire token HTTP
+
+```php
+$token = $auth->getTokenProvider()->extractFromRequest();
+```
+
+---
+
+# 🛡️ Autorisation
+
+## Vérifier permission
+
+```php
+if ($auth->can('posts.edit')) {
+    echo "Autorisé";
 }
 ```
 
-### Vérifier un token
+---
+
+## Vérifier rôle
 
 ```php
-<?php
-
-try {
-    $payload = $auth->verifyToken($token);
-    echo "Payload: " . json_encode($payload);
-} catch (\BAuth\Exceptions\InvalidTokenException $e) {
-    echo "Token invalide: " . $e->getMessage();
-}
-```
-
-### Générer un token personnalisé
-
-```php
-<?php
-
-$tokenProvider = $auth->getTokenProvider();
-$token = $tokenProvider->generate([
-    'user_id' => 123,
-    'email' => 'user@example.com',
-    'roles' => ['admin', 'user'],
-], 7200); // Expire dans 2 heures
-
-echo "Token: " . $token;
-```
-
-### Extraire le token de la requête
-
-```php
-<?php
-
-$tokenProvider = $auth->getTokenProvider();
-$token = $tokenProvider->extractFromRequest(); // Depuis header Authorization
-
-if ($token) {
-    echo "Token trouvé: " . substr($token, 0, 20) . "...";
-} else {
-    echo "Pas de token";
-}
-```
-
-## Autorisation
-
-### Vérifier une permission
-
-```php
-<?php
-
-if ($auth->can('edit_posts')) {
-    echo "L'utilisateur peut éditer les posts";
-} else {
-    echo "L'utilisateur ne peut pas éditer les posts";
-}
-```
-
-### Vérifier un rôle
-
-```php
-<?php
-
 if ($auth->hasRole('admin')) {
-    echo "L'utilisateur est administrateur";
-}
-
-if ($auth->hasRole('moderator') || $auth->hasRole('admin')) {
-    echo "L'utilisateur est modérateur ou administrateur";
+    echo "Admin";
 }
 ```
 
-### Autoriser une action (lève une exception)
+---
+
+## Action protégée
 
 ```php
-<?php
-
-try {
-    $auth->authorize('delete_users');
-    // Continuer si autorisé
-} catch (\BAuth\Exceptions\AuthorizationException $e) {
-    echo "Non autorisé: " . $e->getMessage();
-}
+$auth->authorize('users.delete');
 ```
 
-### Assigner des rôles et permissions
+---
+
+## Gestion avancée
 
 ```php
-<?php
-
 $authProvider = $auth->getAuthorizationProvider();
 
-// Assigner un rôle
 $authProvider->assignRole($userId, 'admin');
+$authProvider->assignPermission('admin', 'users.delete');
 
-// Retirer un rôle
-$authProvider->removeRole($userId, 'admin');
-
-// Assigner une permission à un rôle
-$authProvider->assignPermission('admin', 'delete_users');
-
-// Obtenir les rôles d'un utilisateur
 $roles = $authProvider->getRoles($userId);
-
-// Obtenir les permissions d'un utilisateur
 $permissions = $authProvider->getPermissions($userId);
 ```
 
-## 2FA
+---
 
-### Vérifier un code 2FA
+# 🔐 2FA (Two-Factor Authentication)
+
+## Vérifier code
 
 ```php
-<?php
-
-$code = $_POST['2fa_code'];
-
-if ($auth->verify2FA($code)) {
-    echo "2FA vérifié avec succès";
-} else {
-    echo "Code 2FA invalide";
-}
+$auth->verify2FA($code);
 ```
 
-### Activer le 2FA
+---
+
+## Activer 2FA
 
 ```php
-<?php
+$result = $auth->getTwoFactorProvider()->enable($userId);
 
-$twoFactorProvider = $auth->getTwoFactorProvider();
-
-if ($twoFactorProvider) {
-    $result = $twoFactorProvider->enable($userId);
-
-    // Afficher le QR code
-    echo "Secret: " . $result['secret'];
-    echo "QR Code: " . $result['qr_code'];
-}
+echo $result['secret'];
+echo $result['qr_code'];
 ```
 
-### Désactiver le 2FA
+---
+
+## Désactiver 2FA
 
 ```php
-<?php
-
-$twoFactorProvider = $auth->getTwoFactorProvider();
-
-if ($twoFactorProvider) {
-    $twoFactorProvider->disable($userId);
-    echo "2FA désactivé";
-}
+$auth->getTwoFactorProvider()->disable($userId);
 ```
 
-### Vérifier si le 2FA est activé
+---
+
+## Vérifier statut
 
 ```php
-<?php
-
-$twoFactorProvider = $auth->getTwoFactorProvider();
-
-if ($twoFactorProvider && $twoFactorProvider->isEnabled($userId)) {
-    echo "2FA activé pour cet utilisateur";
-}
+$auth->getTwoFactorProvider()->isEnabled($userId);
 ```
 
-## Gestion des utilisateurs
+---
 
-### Créer un utilisateur
+# 👤 Gestion des utilisateurs
 
-```php
-<?php
-
-$authProvider = $auth->getAuthProvider();
-
-try {
-    $user = $authProvider->createUser([
-        'email' => 'newuser@example.com',
-        'username' => 'newuser',
-        'password' => 'securepassword123',
-    ]);
-
-    echo "Utilisateur créé: " . $user['id'];
-} catch (Exception $e) {
-    echo "Erreur: " . $e->getMessage();
-}
-```
-
-### Obtenir un utilisateur
+## Créer utilisateur
 
 ```php
-<?php
-
-$authProvider = $auth->getAuthProvider();
-
-// Par ID
-$user = $authProvider->getUserById(1);
-
-// Par email
-$user = $authProvider->getUserByEmail('user@example.com');
-
-// Par identifiant (username ou email)
-$user = $authProvider->getUserByIdentifier('user@example.com');
-
-if ($user) {
-    echo "Utilisateur trouvé: " . $user['email'];
-}
-```
-
-### Mettre à jour un utilisateur
-
-```php
-<?php
-
-$authProvider = $auth->getAuthProvider();
-
-$updated = $authProvider->updateUser($userId, [
-    'email' => 'newemail@example.com',
-    'username' => 'newusername',
-    'password' => 'newpassword123', // Sera hashé automatiquement
+$user = $auth->getAuthProvider()->createUser([
+    'email' => 'user@example.com',
+    'username' => 'user',
+    'password' => 'password123',
 ]);
-
-if ($updated) {
-    echo "Utilisateur mis à jour";
-}
 ```
 
-### Supprimer un utilisateur
+---
+
+## Trouver utilisateur
 
 ```php
-<?php
-
-$authProvider = $auth->getAuthProvider();
-
-$deleted = $authProvider->deleteUser($userId);
-
-if ($deleted) {
-    echo "Utilisateur supprimé";
-}
+$user = $auth->getAuthProvider()->getUserById(1);
+$user = $auth->getAuthProvider()->getUserByEmail('email@example.com');
 ```
 
-### Valider les identifiants
+---
+
+## Mise à jour
 
 ```php
-<?php
-
-$authProvider = $auth->getAuthProvider();
-$user = $authProvider->getUserByEmail('user@example.com');
-
-if ($authProvider->validateCredentials($user, 'password123')) {
-    echo "Identifiants valides";
-} else {
-    echo "Identifiants invalides";
-}
+$auth->getAuthProvider()->updateUser($id, [
+    'email' => 'new@email.com',
+]);
 ```
 
-## Gestion des mots de passe
+---
 
-### Hacher un mot de passe
+## Supprimer utilisateur
 
 ```php
-<?php
-
-use BAuth\Support\Password;
-
-$password = new Password($config);
-$hashed = $password->hash('mypassword123');
+$auth->getAuthProvider()->deleteUser($id);
 ```
 
-### Vérifier un mot de passe
+---
+
+# 🔐 Sécurité des mots de passe
+
+## Hash
 
 ```php
-<?php
+$password = new \Bmvc\BAuth\Support\Password($config);
 
-$password = new Password($config);
-
-if ($password->verify('mypassword123', $hashed)) {
-    echo "Mot de passe correct";
-}
+$hash = $password->hash('mypassword');
 ```
 
-### Vérifier si un hash doit être recalculé
+---
+
+## Vérification
 
 ```php
-<?php
-
-$password = new Password($config);
-
-if ($password->needsRehash($currentHash)) {
-    $newHash = $password->hash($plainTextPassword);
-    // Mettre à jour le hash en base de données
-}
+$password->verify('mypassword', $hash);
 ```
 
-### Générer un mot de passe aléatoire
+---
+
+## Rehash automatique
 
 ```php
-<?php
-
-$password = new Password($config);
-$randomPassword = $password->generate(16);
-echo "Mot de passe généré: " . $randomPassword;
+$password->needsRehash($hash);
 ```
 
-## Gestion des erreurs
+---
 
-### Exceptions disponibles
+## Générer mot de passe
 
 ```php
-<?php
+$password->generate(16);
+```
 
-use BAuth\Exceptions\AuthenticationException;
-use BAuth\Exceptions\AuthorizationException;
-use BAuth\Exceptions\InvalidTokenException;
-use BAuth\Exceptions\UserNotFoundException;
-use BAuth\Exceptions\BAuthException;
+---
 
-// Exceptions spécifiques
+# ⚠️ Gestion des erreurs
+
+## Exceptions principales
+
+```php
+AuthenticationException
+AuthorizationException
+InvalidTokenException
+UserNotFoundException
+BAuthException
+```
+
+---
+
+## Exemple global
+
+```php
 try {
-    $auth->login('user@example.com', 'wrongpassword');
+    $auth->login($email, $password);
+
 } catch (AuthenticationException $e) {
-    // Authentification échouée
-} catch (UserNotFoundException $e) {
-    // Utilisateur non trouvé
-} catch (InvalidTokenException $e) {
-    // Token invalide
+    echo "Erreur authentification";
+
 } catch (AuthorizationException $e) {
-    // Non autorisé
-} catch (BAuthException $e) {
-    // Exception générique BAuth
+    echo "Non autorisé";
+
+} catch (Exception $e) {
+    echo "Erreur serveur";
 }
 ```
 
-### Gestion complète des erreurs
+---
+
+# 🧪 Cas pratique complet
 
 ```php
-<?php
-
-try {
-    $auth->authorize('admin_action');
-    // Effectuer l'action
-} catch (\BAuth\Exceptions\AuthenticationException $e) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Non authentifié']);
-} catch (\BAuth\Exceptions\AuthorizationException $e) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Non autorisé']);
-} catch (\Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erreur serveur']);
-}
-```
-
-## Cas d'usage complets
-
-### Formulaire de connexion
-
-```php
-<?php
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
-    $password = $_POST['password'] ?? '';
 
     try {
-        $result = $auth->login($email, $password);
-        $_SESSION['authenticated'] = true;
+        $auth->login($_POST['email'], $_POST['password']);
+
         header('Location: /dashboard');
         exit;
-    } catch (\BAuth\Exceptions\AuthenticationException $e) {
-        $error = 'Email ou mot de passe incorrect';
-    } catch (\BAuth\Exceptions\UserNotFoundException $e) {
-        $error = 'Cet email n\'existe pas';
+
+    } catch (AuthenticationException $e) {
+        $error = "Identifiants invalides";
     }
 }
-?>
-
-<form method="POST">
-    <?php if (isset($error)): ?>
-        <p class="error"><?= htmlspecialchars($error) ?></p>
-    <?php endif; ?>
-
-    <input type="email" name="email" required>
-    <input type="password" name="password" required>
-    <button type="submit">Connexion</button>
-</form>
 ```
 
-### Middleware de protection
+---
+
+# 🔒 Middleware simple
 
 ```php
-<?php
+function auth_required() {
+    global $auth;
 
-function requireAuth() {
     if (!$auth->isAuthenticated()) {
         http_response_code(401);
-        echo json_encode(['error' => 'Non authentifié']);
-        exit;
+        exit("Non authentifié");
     }
 }
-
-function requireRole($role) {
-    requireAuth();
-
-    if (!$auth->hasRole($role)) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Non autorisé']);
-        exit;
-    }
-}
-
-function requirePermission($permission) {
-    requireAuth();
-
-    if (!$auth->can($permission)) {
-        http_response_code(403);
-        echo json_encode(['error' => 'Non autorisé']);
-        exit;
-    }
-}
-
-// Utilisation
-requireAuth();
-// Continuer si authentifié
-
-requireRole('admin');
-// Continuer si administrateur
-
-requirePermission('edit_posts');
-// Continuer si permission existe
 ```
 
-## Prochaines étapes
+---
 
-- Consultez les [Exemples](../examples/)
-- Découvrez les [Intégrations avec les frameworks](../docs/)
-- Explorez l'[API de référence](API.md)
+# 🚀 Prochaines étapes
+
+- JWT avancé
+- Middleware Laravel / Symfony
+- OAuth2
+- API Keys
+- Social Login
