@@ -16,7 +16,7 @@ Une librairie PHP robuste, modulaire et framework-agnostique pour gérer l'authe
 ## Installation
 
 ```bash
-composer require bauth/bauth
+composer require bmvc/bauth
 ```
 
 ## Configuration de base
