@@ -8,9 +8,11 @@
 
 ![PHP](https://img.shields.io/badge/PHP-8.1+-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Version](https://img.shields.io/badge/version-1.0-orange)
+![Version](https://img.shields.io/badge/version-1.1-orange)
 ![JWT](https://img.shields.io/badge/JWT-supported-success)
 ![2FA](https://img.shields.io/badge/2FA-TOTP-blueviolet)
+![OAuth2](https://img.shields.io/badge/OAuth2-supported-blueviolet)
+![WebAuthn](https://img.shields.io/badge/WebAuthn-Passkeys-blueviolet)
 
 </p>
 
@@ -23,6 +25,11 @@
 - ✅ Sessions sécurisées
 - ✅ Rôles & permissions
 - ✅ Support 2FA / TOTP
+- ✅ **OAuth2** (Google, GitHub, Facebook, Microsoft)
+- ✅ **Connexion Sociale**
+- ✅ **Clés API** pour applications tierces
+- ✅ **Sessions Multiples** par utilisateur
+- ✅ **WebAuthn / Passkeys** (authentification sans mot de passe)
 - ✅ Compatible Laravel, Symfony et PHP natif
 - ✅ Architecture PSR-4
 - ✅ Framework-agnostique
@@ -386,11 +393,11 @@ composer test
 - [x] Roles & Permissions
 - [x] 2FA / TOTP
 - [x] Session Management
-- [ ] OAuth2
-- [ ] Social Login
-- [ ] API Keys
-- [ ] Multi-session Management
-- [ ] WebAuthn / Passkeys
+- [x] OAuth2
+- [x] Social Login
+- [x] API Keys
+- [x] Multi-session Management
+- [x] WebAuthn / Passkeys
 
 ---
 

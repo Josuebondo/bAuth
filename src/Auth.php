@@ -9,13 +9,9 @@ use Bmvc\BAuth\Contracts\TokenProviderInterface;
 use Bmvc\BAuth\Contracts\TwoFactorProviderInterface;
 use Bmvc\BAuth\Exceptions\AuthenticationException;
 use Bmvc\BAuth\Exceptions\AuthorizationException;
-use Bmvc\BAuth\Exceptions\InvalidTokenException;
-use Bmvc\BAuth\Providers\BaseAuthorizationProvider;
-use Bmvc\BAuth\Providers\BaseAuthProvider;
-use Bmvc\BAuth\Providers\BaseTwoFactorProvider;
 use Bmvc\BAuth\Providers\JWTProvider;
 use Bmvc\BAuth\Providers\SessionProvider;
-use Bmvc\BAuth\Exceptions\UserNotFoundException;
+
 
 
 /**

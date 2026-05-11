@@ -22,9 +22,9 @@ Créez `src/Service/BAuthService.php` :
 
 namespace App\Service;
 
-use BAuth\Config;
-use BAuth\Auth;
-use BAuth\Examples\Symfony\SymfonyAuthProvider;
+use Bmvc\BAuth\Config;
+use Bmvc\BAuth\Auth;
+use Bmvc\BAuth\Adapters\Symfony\SymfonyAuthProvider;
 use Doctrine\ORM\EntityManagerInterface;
 
 class BAuthService
@@ -227,7 +227,7 @@ class AuthController extends AbstractController
                 'user' => $result['user'],
                 'token' => $result['token'],
             ]);
-        } catch (\BAuth\Exceptions\AuthenticationException $e) {
+        } catch (\Bmvc\BAuth\Exceptions\AuthenticationException $e) {
             return $this->json([
                 'success' => false,
                 'error' => 'Invalid credentials',
@@ -620,7 +620,7 @@ Utilisez-le dans le provider :
 ```php
 <?php
 
-class CustomAuthProvider extends \BAuth\Providers\BaseAuthProvider
+class CustomAuthProvider extends \Bmvc\BAuth\Providers\BaseAuthProvider
 {
     public function __construct(
         $config,

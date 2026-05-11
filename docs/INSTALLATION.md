@@ -1,52 +1,122 @@
 # Installation de BAuth
 
-Ce guide explique comment installer et configurer BAuth dans votre application PHP.
+> Guide complet pour installer et configurer BAuth dans votre application PHP.
 
 ---
 
-# 📋 Prérequis
+## ⚡ Installation rapide (3 minutes)
 
-Avant d’installer BAuth, assurez-vous d’avoir :
+Si vous êtes impatient, voici le chemin le plus court :
 
-- PHP 8.1 ou supérieur
-- Composer
-- Une base de données :
-  - MySQL / MariaDB
-  - PostgreSQL
-  - SQLite
+### 1. Installer via Composer
 
----
-
-# 📦 Installation via Composer
-
-Installer la librairie avec Composer :
-
-```bash id="mwfw7r"
+```bash
 composer require bmvc/bauth
 ```
 
+### 2. Créer configuration basique
+
+```php
+<?php
+use Bmvc\BAuth\Auth;
+use Bmvc\BAuth\Config;
+
+$config = new Config([
+    'jwt' => ['secret' => 'votre-clé-secrète', 'expiresIn' => 3600],
+    'password' => ['algorithm' => PASSWORD_BCRYPT, 'options' => ['cost' => 12]],
+]);
+
+$auth = new Auth($config);
+```
+
+### 3. C'est tout! 🎉
+
+Pour plus de détails, continuez ci-dessous.
+
 ---
 
-# ⚙️ Configuration de l’environnement
+## 📋 Prérequis
 
-## 1. Créer le fichier `.env`
+Avant d'installer BAuth, assurez-vous d'avoir :
 
-```bash id="w4xz5n"
-cp .env.example .env
+- ✅ **PHP 8.1 ou supérieur**
+- ✅ **Composer** (gestionnaire de dépendances PHP)
+- ✅ **Une base de données** (MySQL, PostgreSQL, ou SQLite)
+- ✅ **Une connexion PDO** vers la base de données
+
+---
+
+## 📦 Étape 1 : Installation via Composer
+
+Installer la librairie avec Composer :
+
+```bash
+composer require bmvc/bauth
+```
+
+**Qu'est-ce qui se passe?**
+
+- BAuth est téléchargée dans le dossier `vendor/`
+- L'autoloader Composer est configuré
+
+✅ **Vérification:** Vérifier que `vendor/bAuth/` existe
+
+```bash
+ls vendor/bAuth/
 ```
 
 ---
 
-## 2. Configurer les variables d’environnement
+## 🔐 Étape 2 : Générer une clé JWT secrète
 
-```env id="46s5xp"
-# JWT
-AUTH_JWT_SECRET=your-super-secret-key
+**Pourquoi?** La clé secrète sert à signer vos tokens JWT. Elle doit être très sécurisée et aléatoire.
+
+### Générer une clé
+
+Exécutez cette commande :
+
+```bash
+php -r "echo bin2hex(random_bytes(32));"
+```
+
+Output:
+
+```
+a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1
+```
+
+**Gardez cette valeur** - vous en aurez besoin à l'étape suivante!
+
+---
+
+## ⚙️ Étape 3 : Configuration de l'environnement
+
+### Créer le fichier `.env`
+
+À la racine de votre projet :
+
+```bash
+cp .env.example .env
+```
+
+Ou créer manuellement :
+
+```bash
+touch .env
+```
+
+### Configurer les variables d'environnement
+
+Éditez `.env` avec vos valeurs :
+
+```env
+# JWT - Utilisez la valeur générée à l'étape 2
+AUTH_JWT_SECRET=a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1
 AUTH_JWT_ALGORITHM=HS256
 AUTH_JWT_EXPIRES_IN=3600
 AUTH_JWT_REFRESH_EXPIRES_IN=604800
 
-# Password
+# Mot de passe - Algorithme de hachage
 AUTH_PASSWORD_ALGORITHM=2y
 AUTH_PASSWORD_COST=12
 
@@ -54,55 +124,63 @@ AUTH_PASSWORD_COST=12
 AUTH_SESSION_NAME=bauth_session
 AUTH_SESSION_LIFETIME=7200
 
-# Database
+# Base de données
 DB_HOST=localhost
 DB_PORT=3306
 DB_NAME=bauth_db
 DB_USER=root
 DB_PASSWORD=
 
-# 2FA
+# 2FA (optionnel pour commencer)
 AUTH_2FA_ENABLED=false
 AUTH_2FA_WINDOW=1
 ```
 
----
+**Explications:**
 
-# 🔑 Générer une clé JWT
-
-Exécuter :
-
-```bash id="4ql4m7"
-php -r "echo bin2hex(random_bytes(32));"
-```
-
-Puis utiliser la valeur générée pour :
-
-```env id="pf4y2p"
-AUTH_JWT_SECRET=
-```
+- `AUTH_JWT_SECRET`: Votre clé secrète (générée à l'étape 2)
+- `AUTH_PASSWORD_COST`: Plus haut = plus sécurisé mais plus lent (12-14 conseillé)
+- `DB_*`: Vos informations de connexion base de données
 
 ---
 
-# 🗄️ Configuration de la base de données
+## 🗄️ Étape 4 : Préparer la base de données
 
-## MySQL / MariaDB
+### Créer la base de données
 
-Créer la base de données :
+#### MySQL / MariaDB
 
-```sql id="d4jj2e"
+```bash
+mysql -u root -p
+```
+
+```sql
 CREATE DATABASE bauth_db
 CHARACTER SET utf8mb4
 COLLATE utf8mb4_unicode_ci;
 ```
 
----
+#### PostgreSQL
 
-## Structure minimale des tables
+```bash
+psql -U postgres
+```
 
-### Table `users`
+```sql
+CREATE DATABASE bauth_db;
+```
 
-```sql id="sg7fwi"
+#### SQLite
+
+```bash
+sqlite3 bauth.db
+```
+
+### Créer les tables
+
+**Table `users`** (utilisateurs)
+
+```sql
 CREATE TABLE users (
     id INT PRIMARY KEY AUTO_INCREMENT,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -111,15 +189,13 @@ CREATE TABLE users (
     totp_secret VARCHAR(255) NULL,
     two_factor_enabled BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 ```
 
----
+**Table `roles`** (rôles)
 
-### Table `roles`
-
-```sql id="u4egj7"
+```sql
 CREATE TABLE roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) UNIQUE NOT NULL,
@@ -128,11 +204,9 @@ CREATE TABLE roles (
 );
 ```
 
----
+**Table `permissions`** (permissions)
 
-### Table `permissions`
-
-```sql id="jlwmok"
+```sql
 CREATE TABLE permissions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(255) UNIQUE NOT NULL,
@@ -141,11 +215,9 @@ CREATE TABLE permissions (
 );
 ```
 
----
+**Table `user_roles`** (liaison utilisateurs-rôles)
 
-### Table `user_roles`
-
-```sql id="q4cfbf"
+```sql
 CREATE TABLE user_roles (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -164,21 +236,16 @@ CREATE TABLE user_roles (
 );
 ```
 
----
+**Table `role_permissions`** (liaison rôles-permissions)
 
-### Table `role_permissions`
-
-```sql id="4e9k7h"
+```sql
 CREATE TABLE role_permissions (
     id INT PRIMARY KEY AUTO_INCREMENT,
     role_id INT NOT NULL,
     permission_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 
-    UNIQUE KEY unique_role_permission (
-        role_id,
-        permission_id
-    ),
+    UNIQUE KEY unique_role_permission (role_id, permission_id),
 
     FOREIGN KEY (role_id)
         REFERENCES roles(id)
@@ -190,26 +257,26 @@ CREATE TABLE role_permissions (
 );
 ```
 
----
+**Table `revoked_tokens`** (tokens révoqués)
 
-### Table `revoked_tokens`
-
-```sql id="xt3bb8"
+```sql
 CREATE TABLE revoked_tokens (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    token_hash VARCHAR(255) NOT NULL,
+    token_hash VARCHAR(255) NOT NULL UNIQUE,
     expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    INDEX idx_expires_at (expires_at)
 );
 ```
 
 ---
 
-# 🚀 Initialisation de BAuth
+## 🚀 Étape 5 : Initialiser BAuth dans votre application
 
-## PHP natif
+### PHP natif ou projet générique
 
-```php id="bqphn2"
+```php
 <?php
 
 require 'vendor/autoload.php';
@@ -219,163 +286,138 @@ use Bmvc\BAuth\Auth;
 use Bmvc\BAuth\Config;
 use Bmvc\BAuth\Adapters\Generic\GenericAuthProvider;
 
+// 1. Configuration
 $config = new Config([
     'jwt' => [
-        'secret' => $_ENV['AUTH_JWT_SECRET'],
+        'secret' => $_ENV['AUTH_JWT_SECRET'] ?? 'dev-secret',
         'expiresIn' => 3600,
+    ],
+    'password' => [
+        'algorithm' => PASSWORD_BCRYPT,
+        'options' => ['cost' => 12],
     ]
 ]);
 
+// 2. Connexion base de données
 $pdo = new PDO(
-    'mysql:host=localhost;dbname=bauth_db',
-    'root',
-    ''
+    'mysql:host=localhost;dbname=bauth_db;charset=utf8mb4',
+    $_ENV['DB_USER'],
+    $_ENV['DB_PASSWORD']
 );
 
+// 3. Initialiser Auth
 $auth = new Auth($config);
 
+// 4. Configurer le provider
 $provider = new GenericAuthProvider($config);
-
-$provider->setGetUserByEmailCallback(
-    function ($email) use ($pdo) {
-
-        $stmt = $pdo->prepare(
-            "SELECT * FROM users WHERE email = ?"
-        );
-
-        $stmt->execute([$email]);
-
-        return $stmt->fetch();
-    }
-);
+$provider->setConnection($pdo);
 
 $auth->setAuthProvider($provider);
+
+// 5. Utiliser!
+$result = $auth->login('user@example.com', 'password123');
+$user = $result['user'];
+$token = $result['token'];
 ```
+
+### Laravel
+
+Voir [Guide Laravel](LARAVEL.md)
+
+### Symfony
+
+Voir [Guide Symfony](SYMFONY.md)
 
 ---
 
-# ⚡ Laravel
+## ✅ Vérifier l'installation
 
-```php id="5yq0az"
+### Tester la configuration
+
+```php
 <?php
 
-use Bmvc\BAuth\Auth;
-use Bmvc\BAuth\Config;
-use Bmvc\BAuth\Adapters\Laravel\LaravelAuthProvider;
+try {
+    // Vérifier la configuration
+    echo "JWT Secret: " . strlen($config->get('jwt.secret')) . " caractères\n";
 
-$config = new Config([
-    'jwt' => [
-        'secret' => env('AUTH_JWT_SECRET'),
-        'expiresIn' => 3600,
-    ]
-]);
+    // Vérifier la connexion DB
+    $pdo->query('SELECT 1');
+    echo "✅ Base de données connectée\n";
 
-$auth = new Auth($config);
+    // Vérifier les tables
+    $result = $pdo->query("SHOW TABLES")->fetchAll();
+    echo "✅ Tables trouvées: " . count($result) . "\n";
 
-$provider = new LaravelAuthProvider(
-    $config,
-    'users'
-);
+    // Test rapide d'authentification
+    // (créer un utilisateur de test d'abord)
 
-$auth->setAuthProvider($provider);
-```
-
----
-
-# ⚡ Symfony
-
-```php id="0d6tnr"
-<?php
-
-use Bmvc\BAuth\Auth;
-use Bmvc\BAuth\Config;
-use Doctrine\ORM\EntityManagerInterface;
-use Bmvc\BAuth\Adapters\Symfony\SymfonyAuthProvider;
-
-$config = new Config([
-    'jwt' => [
-        'secret' => $_ENV['AUTH_JWT_SECRET'],
-        'expiresIn' => 3600,
-    ]
-]);
-
-$auth = new Auth($config);
-
-$provider = new SymfonyAuthProvider(
-    $config,
-    $entityManager,
-    App\Entity\User::class
-);
-
-$auth->setAuthProvider($provider);
-```
-
----
-
-# 🧪 Vérifier l’installation
-
-Créer un fichier :
-
-```text id="jpcq1f"
-test_install.php
-```
-
----
-
-## Contenu du fichier
-
-```php id="um4yzj"
-<?php
-
-require 'vendor/autoload.php';
-
-echo "Checking BAuth installation...\n\n";
-
-$classes = [
-
-    'Bmvc\BAuth\Auth',
-    'Bmvc\BAuth\Config',
-    'Bmvc\BAuth\Contracts\AuthProviderInterface',
-    'Bmvc\BAuth\Contracts\TokenProviderInterface',
-
-];
-
-foreach ($classes as $class) {
-
-    $exists = class_exists($class);
-
-    echo ($exists ? '✓' : '✗')
-        . " {$class}\n";
+} catch (Exception $e) {
+    echo "❌ Erreur: " . $e->getMessage();
 }
-
-echo "\n✓ Installation complete!\n";
 ```
 
 ---
 
-## Exécuter le test
+## 🐛 Problèmes courants
 
-```bash id="ifqlhp"
-php test_install.php
+### "PDO: Connection refused"
+
+**Cause:** La base de données n'est pas accessible
+
+**Solution:**
+
+```bash
+# Vérifier que MySQL est en cours d'exécution
+mysql -u root -p -h localhost
+
+# Vérifier les paramètres de connexion
+# DB_HOST, DB_PORT, DB_USER, DB_PASSWORD dans .env
+```
+
+### "Class not found: Bmvc\BAuth\Auth"
+
+**Cause:** L'autoloader Composer n'est pas chargé
+
+**Solution:**
+
+```php
+<?php
+// Assurez-vous d'avoir:
+require 'vendor/autoload.php';
+```
+
+### "JWT Secret not set"
+
+**Cause:** La variable d'environnement n'est pas définie
+
+**Solution:**
+
+```bash
+# Générer une nouvelle clé
+php -r "echo bin2hex(random_bytes(32));"
+
+# Ajouter au .env
+AUTH_JWT_SECRET=<votre-clé-générée>
+```
+
+### "Table users not found"
+
+**Cause:** Les tables n'ont pas été créées
+
+**Solution:**
+
+```bash
+# Exécuter les scripts SQL fournis (voir Étape 4)
+mysql -u root -p bauth_db < setup_tables.sql
 ```
 
 ---
 
-# 📚 Prochaines étapes
+## 📚 Prochaines étapes
 
-Après l’installation :
-
-- Configurer l’authentification
-- Générer des JWT
-- Configurer les rôles et permissions
-- Activer le 2FA
-- Intégrer BAuth avec votre framework
-
-Documentation disponible :
-
-- `USAGE.md`
-- `JWT.md`
-- `AUTHORIZATION.md`
-- `LARAVEL.md`
-- `SYMFONY.md`
-- `TWO_FACTOR.md`
+1. **Nouveau?** → [Guide d'utilisation](USAGE.md)
+2. **Intégration Laravel?** → [Guide Laravel](LARAVEL.md)
+3. **Intégration Symfony?** → [Guide Symfony](SYMFONY.md)
+4. **Sécurité?** → [Guide de sécurité](SECURITY.md)
+5. **Problème?** → [Dépannage](TROUBLESHOOTING.md)

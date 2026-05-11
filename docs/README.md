@@ -1,54 +1,144 @@
-# 📚 Documentation complète de BAuth
+# 📚 BAuth Documentation
 
-Bienvenue dans la documentation complète de BAuth. Cette librairie PHP complète pour l'authentification est compatible avec tous les frameworks et projets PHP.
+> Librairie PHP moderne pour authentification, autorisation, JWT, OAuth2, 2FA, WebAuthn et plus.
 
-## 🎯 Commencer
+---
 
-### Nouveaux utilisateurs
+## 🎯 Où commencer?
 
-1. **[Installation](INSTALLATION.md)** - Configurer BAuth étape par étape
-2. **[Guide d'utilisation](USAGE.md)** - Apprendre les bases et les cas courants
-3. **[Exemples](../examples/)** - Voir le code en action
+### 👶 Je suis complètement nouveau
 
-### Utilisateurs avancés
+**Parcours recommandé (15-30 min):**
 
-1. **[Référence API](API.md)** - Documentation complète de toutes les classes et méthodes
-2. **[Guide de sécurité](SECURITY.md)** - Bonnes pratiques et recommandations
-3. **[Dépannage](TROUBLESHOOTING.md)** - Résoudre les problèmes courants
+1. 📖 [Getting Started](GETTING_STARTED.md) — Un guide étape par étape (15 min)
+2. 🔧 [Installation](INSTALLATION.md) (5 min si besoin de détails)
+3. 🎮 Essayer un [Exemple](../examples/) (5 min)
+
+👉 **Après:** [Guide d'utilisation - Authentification](USAGE.md#authentification)
+
+---
+
+### 🚀 Je veux commencer rapidement
+
+**Parcours accéléré (30 min):**
+
+1. ⚡ [Installation rapide](INSTALLATION.md#installation-rapide-3-minutes) (3 min)
+2. 🔑 [Getting Started](GETTING_STARTED.md) (20 min)
+3. 💻 Copier/adapter les [Exemples](../examples/) (5 min)
+
+👉 **Besoin d'aide?** Consulter [Quick Reference](QUICK_REFERENCE.md)
+
+---
+
+### 🎓 Je veux comprendre en profondeur
+
+**Parcours complet (2-3 heures):**
+
+1. 📖 [Installation détaillée](INSTALLATION.md)
+2. 📘 [Guide d'utilisation complet](USAGE.md) - tous les concepts
+3. 🎯 [Quick Reference](QUICK_REFERENCE.md) - snippets utiles
+4. 🛠️ [API Reference](API.md) - toutes les méthodes
+5. 🔒 [Guide de sécurité](SECURITY.md) - bonnes pratiques
+6. 🚨 [Dépannage](TROUBLESHOOTING.md) - problèmes courants
+7. 🔌 [Intégrations frameworks](LARAVEL.md) / [Symfony](SYMFONY.md)
+
+---
+
+### 🔧 Je dois intégrer BAuth à mon projet existant
+
+**Selon votre framework:**
+
+- **Framework:** [Laravel](LARAVEL.md) | [Symfony](SYMFONY.md)
+- **Autre/PHP natif:** Suivre [Getting Started](GETTING_STARTED.md)
+
+---
+
+## 📚 Guides essentiels
+
+| Document                                     | Durée  | But                                     |
+| -------------------------------------------- | ------ | --------------------------------------- |
+| **[Getting Started](GETTING_STARTED.md)** 🚀 | 30 min | Mettre en place un système auth complet |
+| **[Quick Reference](QUICK_REFERENCE.md)** 📋 | 2 min  | Trouver rapidement un snippet           |
+| **[Installation](INSTALLATION.md)** 🔧       | 10 min | Configurer BAuth en détail              |
+| **[Guide d'utilisation](USAGE.md)** 📘       | 45 min | Maîtriser toutes les fonctionnalités    |
+| **[Sécurité](SECURITY.md)** 🔒               | 20 min | Bonnes pratiques de sécurité            |
+
+---
+
+## ⚡ Quick Start (~5 min)
+
+### Installation
+
+```bash
+composer require bmvc/bauth
+```
+
+### Configuration minimale
+
+```php
+<?php
+use Bmvc\BAuth\Auth;
+use Bmvc\BAuth\Config;
+
+$config = new Config([
+    'jwt' => ['secret' => 'your-secret', 'expiresIn' => 3600],
+    'password' => ['algorithm' => PASSWORD_BCRYPT, 'options' => ['cost' => 12]],
+]);
+
+$auth = new Auth($config);
+```
+
+### Authentification
+
+```php
+// Connexion
+$result = $auth->login('user@example.com', 'password123');
+$user = $result['user'];
+$token = $result['token'];
+
+// Vérifier si connecté
+if ($auth->isAuthenticated()) {
+    $user = $auth->user();
+    echo "Bienvenue, " . $user['email'];
+}
+
+// Déconnexion
+$auth->logout();
+```
+
+👉 **En savoir plus:** [Getting Started](GETTING_STARTED.md) | [Guide d'utilisation](USAGE.md)
+
+---
 
 ## 📖 Documentation par domaine
 
-### ✅ Authentification
+### ✅ Authentification & Sessions
 
-- [Guide d'utilisation - Authentification](USAGE.md#authentification)
-- [API - Classe Auth](API.md#classe-auth)
-- [Dépannage - Authentification](TROUBLESHOOTING.md#authentification)
+| Sujet                | Débutant                                               | Avancé                                           |
+| -------------------- | ------------------------------------------------------ | ------------------------------------------------ |
+| **Authentification** | [USAGE.md#authentification](USAGE.md#authentification) | [API.md#auth-login](API.md#auth-login)           |
+| **Sessions**         | [USAGE.md#sessions](USAGE.md#gestion-des-sessions)     | [SECURITY.md#sessions](SECURITY.md#sessions)     |
+| **Tokens JWT**       | [USAGE.md#jwt](USAGE.md#jwt)                           | [SECURITY.md#tokens-jwt](SECURITY.md#tokens-jwt) |
 
-### 🔑 Tokens JWT
+### 🔐 Sécurité & Autorisation
 
-- [Guide d'utilisation - Tokens JWT](USAGE.md#tokens-jwt)
-- [API - TokenProviderInterface](API.md#tokenproviderinterface)
-- [Sécurité - Tokens JWT](SECURITY.md#tokens-jwt)
-- [Dépannage - Tokens JWT](TROUBLESHOOTING.md#tokens-jwt)
+| Sujet                   | Débutant                                                          | Avancé                                                 |
+| ----------------------- | ----------------------------------------------------------------- | ------------------------------------------------------ |
+| **Rôles & Permissions** | [USAGE.md#autorisation](USAGE.md#autorisation)                    | [API.md#authorization](API.md#authorization)           |
+| **Mots de passe**       | [USAGE.md#sécurité-des-mots](USAGE.md#sécurité-des-mots-de-passe) | [SECURITY.md#mots-de-passe](SECURITY.md#mots-de-passe) |
+| **2FA (TOTP)**          | [USAGE.md#2fa](USAGE.md#2fa)                                      | [Guide 2FA](SECURITY.md#2fa)                           |
 
-### 👥 Sessions
+### 🆕 Fonctionnalités avancées
 
-- [Guide d'utilisation - Sessions](USAGE.md#gestion-des-sessions)
-- [API - SessionProviderInterface](API.md#sessionproviderinterface)
-- [Sécurité - Sessions](SECURITY.md#sessions)
-- [Dépannage - Sessions](TROUBLESHOOTING.md#sessions)
+| Fonctionnalité         | Description                          | Guide                                |
+| ---------------------- | ------------------------------------ | ------------------------------------ |
+| **OAuth2**             | Google, GitHub, Facebook, Microsoft  | [OAuth2.md](OAUTH2.md)               |
+| **Connexion Sociale**  | Lier comptes sociaux, Single Sign-On | [SOCIAL_LOGIN.md](SOCIAL_LOGIN.md)   |
+| **Clés API**           | Authentifier applications tierces    | [API_KEYS.md](API_KEYS.md)           |
+| **Sessions Multiples** | Gérer plusieurs appareils/sessions   | [MULTI_SESSION.md](MULTI_SESSION.md) |
+| **WebAuthn**           | Authentification FIDO2 / Passkeys    | [WEBAUTHN.md](WEBAUTHN.md)           |
 
-### 🛡️ Autorisation (Rôles & Permissions)
-
-- [Guide d'utilisation - Autorisation](USAGE.md#autorisation)
-- [API - AuthorizationProviderInterface](API.md#authorizationproviderinterface)
-- [Dépannage - Autorisation](TROUBLESHOOTING.md#autorisation)
-
-### 🔐 2FA (Authentification à deux facteurs)
-
-- [Guide d'utilisation - 2FA](USAGE.md#2fa)
-- [API - TwoFactorProviderInterface](API.md#twofactorproviderinterface)
-- [Dépannage - 2FA](TROUBLESHOOTING.md#2fa)
+---
 
 ## 🎛️ Intégration avec frameworks
 

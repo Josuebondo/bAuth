@@ -1,6 +1,6 @@
 <?php
 
-namespace Bmvc\BAuth\Examples\Generic;
+namespace Bmvc\BAuth\Adapters\Generic;
 
 use Bmvc\BAuth\Providers\BaseAuthProvider;
 
