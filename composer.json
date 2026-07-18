@@ -17,7 +17,7 @@
   },
   "require": {
     "php": "^8.0",
-    "firebase/php-jwt": "^6.0",
+    "firebase/php-jwt": "^7.0",
     "ext-json": "*"
   },
   "require-dev": {
