@@ -2,6 +2,69 @@
 
 Tous les changements notables de ce projet seront documentés dans ce fichier.
 
+## [1.1.1] - 2026-07-18
+
+### Changé
+
+#### Authentification
+
+- `Auth::login()` ne génère plus automatiquement un jeton d'authentification.
+- La génération des tokens est désormais entièrement séparée du processus d'authentification.
+- L'authentification peut désormais être utilisée indépendamment des systèmes JWT, Session ou API Keys.
+- Amélioration de la séparation des responsabilités (Single Responsibility Principle).
+
+#### BMVC Adapter
+
+- Le provider BMVC ne dépend plus d'un modèle codé en dur.
+- Le nom de la table (ou du modèle) est désormais configurable lors de l'initialisation du provider.
+- Le provider résout automatiquement la classe du modèle à partir du nom fourni.
+
+Avant :
+
+```php
+$adapter = new BmvcAuthProvider($config);
+// Utilisait toujours App\Modeles\users
+```
+
+Maintenant :
+
+```php
+$adapter = new BmvcAuthProvider($config, 'users');
+```
+
+ou
+
+```php
+$adapter = new BmvcAuthProvider($config, 'employees');
+```
+
+Le provider chargera automatiquement :
+
+```php
+\App\Modeles\users
+```
+
+ou
+
+```php
+\App\Modeles\employees
+```
+
+selon la valeur passée.
+
+### Amélioré
+
+- Refactorisation complète du pipeline d'authentification.
+- Architecture plus modulaire.
+- Meilleure extensibilité des providers.
+- Simplification de l'intégration avec BMVC.
+- Le provider BMVC peut désormais être réutilisé avec n'importe quel modèle utilisateur sans modification du code source.
+
+### Corrigé
+
+- Correction de la résolution du modèle dans le provider BMVC.
+- Suppression de la dépendance à un modèle utilisateur fixe.
+
 ## [1.1.0] - 2026-05-10
 
 ### Ajouté
