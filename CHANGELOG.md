@@ -4,6 +4,11 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 
 ## [1.2.0] - 2026-07-18
 
+### Ajouté
+
+- Compatibilité avec `firebase/php-jwt` **v7.x**.
+- Compatibilité avec les dernières politiques de sécurité de Composer.
+
 ### Changé
 
 #### Authentification
@@ -13,10 +18,17 @@ Tous les changements notables de ce projet seront documentés dans ce fichier.
 - L'authentification peut désormais être utilisée indépendamment des systèmes JWT, Session ou API Keys.
 - Amélioration de la séparation des responsabilités (Single Responsibility Principle).
 
+#### JWT
+
+- Migration vers `firebase/php-jwt` **v7.x**.
+- Simplification du provider JWT pour utiliser l'API moderne basée sur `Firebase\JWT\Key`.
+- Suppression de la compatibilité avec les anciennes versions de `firebase/php-jwt`.
+- Amélioration de la gestion des exceptions lors de la validation des jetons.
+
 #### BMVC Adapter
 
 - Le provider BMVC ne dépend plus d'un modèle codé en dur.
-- Le nom de la table (ou du modèle) est désormais configurable lors de l'initialisation du provider.
+- Le nom du modèle est désormais configurable lors de l'initialisation du provider.
 - Le provider résout automatiquement la classe du modèle à partir du nom fourni.
 
 Avant :
@@ -58,12 +70,14 @@ selon la valeur passée.
 - Architecture plus modulaire.
 - Meilleure extensibilité des providers.
 - Simplification de l'intégration avec BMVC.
+- Réduction du couplage entre l'authentification et la génération des tokens.
 - Le provider BMVC peut désormais être réutilisé avec n'importe quel modèle utilisateur sans modification du code source.
 
 ### Corrigé
 
-- Correction de la résolution du modèle dans le provider BMVC.
+- Correction de la résolution dynamique du modèle dans le provider BMVC.
 - Suppression de la dépendance à un modèle utilisateur fixe.
+- Correction de la compatibilité avec les dernières versions de Composer.
 
 ## [1.1.0] - 2026-05-10
 
@@ -174,33 +188,6 @@ Tables à créer:
 - `webauthn_backup_codes`
 
 ## [1.0.0] - 2026-05-09
-
-### Ajouté
-
-- Authentification par email/mot de passe
-- Gestion des tokens JWT
-- Gestion des sessions PHP
-- Système de rôles et permissions
-- Support du 2FA (TOTP)
-- Hachage sécurisé des mots de passe (bcrypt)
-- Intégrations Laravel et Symfony
-- Fournisseur générique avec callbacks
-- Fournisseur PDO pour MySQL, PostgreSQL, SQLite
-- Tests unitaires complets
-- Documentation complète
-- Exemples d'utilisation
-
-### Architecture
-
-- Interfaces pour extensibilité
-- Classes de base pour implémentation facile
-- Configuration flexible
-- Exceptions personnalisées
-- Support PSR-4
-
-## Versioning
-
-Ce projet utilise le [Semantic Versioning](https://semver.org/).
 
 ### Ajouté
 
