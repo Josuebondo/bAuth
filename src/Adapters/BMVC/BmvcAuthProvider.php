@@ -9,14 +9,19 @@ use Bmvc\BAuth\Providers\BaseAuthProvider;
  */
 class BmvcAuthProvider extends BaseAuthProvider
 {
-    private string $table;
+    protected string $table;
 
     public function __construct(
         $config,
-        string $table = 'users'
+        $table = 'users',
     ) {
-        parent::__construct($config);
         $this->table = $table;
+        parent::__construct($config);
+    }
+
+    protected function modelClass(): string
+    {
+        return '\\App\\Modeles\\' . $this->table;
     }
 
     /**
@@ -24,13 +29,12 @@ class BmvcAuthProvider extends BaseAuthProvider
      */
     public function getUserByIdentifier(string $identifier): ?array
     {
-        // Implémentation spécifique à BMVC pour récupérer l'utilisateur
-        // Par exemple, en utilisant le modèle Eloquent de BMVC
-        $user = \App\Models\Utilisateur::ou('username', $identifier)
+        $modelClass = $this->modelClass();
+        $user = $modelClass::ou('username', $identifier)
             ->ou('email', $identifier)
             ->premier();
 
-        return $user ? $user->toArray() : null;
+        return $user ? $user->enTableau() : null;
     }
 
     /**
@@ -38,9 +42,10 @@ class BmvcAuthProvider extends BaseAuthProvider
      */
     public function getUserByEmail(string $email): ?array
     {
-        $user = \App\Models\Utilisateur::ou('email', $email)->premier();
+        $modelClass = $this->modelClass();
+        $user = $modelClass::ou('email', $email)->premier();
 
-        return $user ? $user->toArray() : null;
+        return $user ? $user->enTableau() : null;
     }
 
     /**
@@ -48,7 +53,8 @@ class BmvcAuthProvider extends BaseAuthProvider
      */
     public function getUserById(mixed $id): ?array
     {
-        $user = \App\Models\Utilisateur::trouver($id);
+        $modelClass = $this->modelClass();
+        $user = $modelClass::trouver($id);
 
         return $user ? $user->enTableau() : null;
     }
@@ -58,20 +64,33 @@ class BmvcAuthProvider extends BaseAuthProvider
      */
     public function createUser(array $userData): ?array
     {
-        $user = \App\Models\Utilisateur::create($userData);
+        $modelClass = $this->modelClass();
+        $user = $modelClass::creer($userData);
 
         return $user ? $user->enTableau() : null;
     }
-    public function updateUser(mixed $id, array $userData): ?array
+
+    public function updateUser(mixed $id, array $userData): bool
     {
-        $user = \App\Models\Utilisateur::trouver($id);
-
+        $modelClass = $this->modelClass();
+        $user = $modelClass::trouver($id);
         if (!$user) {
-            return null;
+            return false;
         }
+        $user->remplir($userData);
+        if ($user->sauvegarder()) {
+            return true;
+        }
+        return false;
+    }
 
-        $user->update($userData);
-
-        return $user->enTableau();
+    public function deleteUser(mixed $id): bool
+    {
+        $modelClass = $this->modelClass();
+        $user = $modelClass::trouver($id);
+        if (!$user) {
+            return false;
+        }
+        return $user->supprimer();
     }
 }
