@@ -6,6 +6,7 @@ use Bmvc\BAuth\Config;
 use Bmvc\BAuth\Contracts\TokenProviderInterface;
 use Bmvc\BAuth\Exceptions\InvalidTokenException;
 use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 /**
  * Fournisseur de tokens JWT
@@ -36,22 +37,22 @@ class JWTProvider implements TokenProviderInterface
     /**
      * Vérifier et décoder un token JWT
      */
+
+
     public function verify(string $token): ?array
     {
         try {
             $secret = $this->config->get('jwt.secret');
             $algorithm = $this->config->get('jwt.algorithm', 'HS256');
 
-            // Support for both firebase/jwt v5.x and v6.x+
-            if (class_exists('Firebase\JWT\Key')) {
-                $decoded = JWT::decode($token, new \Firebase\JWT\Key($secret, $algorithm));
-            } else {
-                $decoded = JWT::decode($token, $secret, [$algorithm]);
-            }
+            $decoded = JWT::decode(
+                $token,
+                new Key($secret, $algorithm)
+            );
 
             return (array) $decoded;
-        } catch (\Exception $e) {
-            throw new InvalidTokenException($e->getMessage());
+        } catch (\Throwable $e) {
+            throw new InvalidTokenException($e->getMessage(), 0, $e);
         }
     }
 
