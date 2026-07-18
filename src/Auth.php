@@ -2,8 +2,8 @@
 
 namespace Bmvc\BAuth;
 
-use Bmvc\BAuth\Contracts\AuthProviderInterface;
 use Bmvc\BAuth\Contracts\AuthorizationProviderInterface;
+use Bmvc\BAuth\Contracts\AuthProviderInterface;
 use Bmvc\BAuth\Contracts\SessionProviderInterface;
 use Bmvc\BAuth\Contracts\TokenProviderInterface;
 use Bmvc\BAuth\Contracts\TwoFactorProviderInterface;
@@ -11,6 +11,7 @@ use Bmvc\BAuth\Exceptions\AuthenticationException;
 use Bmvc\BAuth\Exceptions\AuthorizationException;
 use Bmvc\BAuth\Providers\JWTProvider;
 use Bmvc\BAuth\Providers\SessionProvider;
+use Bmvc\BAuth\Support\Password;
 
 
 
@@ -25,7 +26,10 @@ class Auth
     private ?AuthorizationProviderInterface $authorizationProvider = null;
     private ?TwoFactorProviderInterface $twoFactorProvider = null;
 
-    public function __construct(private Config $config) {}
+    public function __construct(private Config $config)
+    {
+        new Password($config);
+    }
 
     /**
      * Définir le fournisseur d'authentification
@@ -124,24 +128,18 @@ class Auth
     /**
      * Authentifier un utilisateur
      */
-    public function login(string $identifier, string $password, bool $rememberMe = false): array
+
+    public function login(string $identifier, string $password): array
     {
         $provider = $this->getAuthProvider();
         $provider->authenticate($identifier, $password);
 
         $user = $provider->getUser();
-        $tokenProvider = $this->getTokenProvider();
-        $token = $tokenProvider->generate(['user_id' => $user['id'] ?? $user['user_id']]);
-
-        // Démarrer la session
-        $this->getSessionProvider()->start($user, $token);
 
         return [
-            'user' => $user,
-            'token' => $token,
+            'user' => $user
         ];
     }
-
     /**
      * Vérifier 2FA
      */
