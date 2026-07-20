@@ -4,47 +4,52 @@ namespace Bmvc\BAuth\Support;
 
 use Bmvc\BAuth\Config;
 
-/**
- * Utilitaire pour le hachage et la vérification des mots de passe
- */
 class Password
 {
-    public function __construct(private Config $config) {}
+    protected static Config $config;
 
     /**
-     * Hacher un mot de passe
+     * Initialiser la configuration.
      */
-    public function hash(string $password): string
+    public static function init(Config $config): void
     {
-        $algo = $this->config->get('password.algorithm');
-        $options = $this->config->get('password.options', []);
+        self::$config = $config;
+    }
+
+    /**
+     * Hacher un mot de passe.
+     */
+    public static function hash(string $password): string
+    {
+        $algo = self::$config->get('password.algorithm');
+        $options = self::$config->get('password.options', []);
 
         return password_hash($password, $algo, $options);
     }
 
     /**
-     * Vérifier un mot de passe
+     * Vérifier un mot de passe.
      */
-    public function verify(string $password, string $hash): bool
+    public static function verify(string $password, string $hash): bool
     {
         return password_verify($password, $hash);
     }
 
     /**
-     * Vérifier si un hash doit être recalculé
+     * Vérifier si un hash doit être recalculé.
      */
-    public function needsRehash(string $hash): bool
+    public static function needsRehash(string $hash): bool
     {
-        $algo = $this->config->get('password.algorithm');
-        $options = $this->config->get('password.options', []);
+        $algo = self::$config->get('password.algorithm');
+        $options = self::$config->get('password.options', []);
 
         return password_needs_rehash($hash, $algo, $options);
     }
 
     /**
-     * Générer un mot de passe aléatoire
+     * Générer un mot de passe aléatoire.
      */
-    public function generate(int $length = 16): string
+    public static function generate(int $length = 16): string
     {
         $characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
         $password = '';
